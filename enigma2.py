@@ -60,7 +60,7 @@ def index():
 def list():
     try:
         db = get_db()
-        entries = db.execute('select * from services').fetchall()
+        entries = db.execute('select * from entries').fetchall()
         return render_template('list.html', entries = entries)
     except sqlite3.Error as e:
         error = "Could not complete query: "+e.args[0]
@@ -70,7 +70,7 @@ def list():
 def applyFilter():
     try:
         db = get_db()
-        entries = db.execute('select * from services where '+ request.form['filter']).fetchall()
+        entries = db.execute('select * from entries where '+ request.form['filter']).fetchall()
         return render_template('list.html', entries = entries)
     except sqlite3.Error as e:
         error = "Could not complete query: "+e.args[0]
@@ -85,10 +85,12 @@ def create():
     elif request.method == 'POST':
         try:
             db = get_db()
-            # vals = [request.form['originNode'], request.form['destinationNode'],request.form['pwId'],request.form['localInterface'],request.form['remoteInterface'],request.form['vlan'],request.form['vplsId']
-            db.execute('insert into services (nodoOrigen, nodoDestino, pwId, localInterface, remoteInterface, vlan, vplsId) values (?,?,?,?,?,?,?)',[request.form['originNode'], request.form['destinationNode'],request.form['pwId'],request.form['localInterface'],request.form['remoteInterface'],request.form['vlan'],request.form['vplsId']])
+            db.execute('insert into entries (originNode, destinationNode, pwID, localInterface, remoteInterface, vlanID, vplsID, customerName) values (?,?,?,?,?,?,?,?)',[request.form['originNode'], request.form['destinationNode'],request.form['pwID'],request.form['localInterface'],request.form['remoteInterface'],request.form['vlanID'],request.form['vplsID'],request.form['customerName']])
+            vals = [request.form['originNode'], request.form['destinationNode'],request.form['pwID'],request.form['localInterface'],request.form['remoteInterface'],request.form['vlanID'],request.form['vplsID'],request.form['customerName']]
+            r = createVpls(vals)
+            print r
             db.commit()
-            if  request.form['vplsId'] == '':
+            if  request.form['vplsID'] == '':
                 print 'Crear Servicio como PW'
                 # createPw(vals)
             else:
@@ -106,10 +108,20 @@ def create():
 def update():
     return render_template('update.html')
 
-@app.route('/delete')
+@app.route('/delete', methods=['GET','POST'])
 def delete():
-    return render_template('delete.html')
-
+    if request.method == 'GET':
+        return render_template('delete.html')
+    elif request.method == 'POST':
+        try:
+            db = get_db()
+            db.execute('delete from entries where '+ request.form['filter'])
+            db.commit()
+            flash('Deleted successfully')
+            return redirect(url_for('list'))
+        except sqlite3.Error as e:
+            error = "Could not delete service: "+e.args[0]
+            return render_template('delete.html', error = error)
     # try:
     #     db = get_db()
     #     entries = db.execute('select * from entries').fetchall()

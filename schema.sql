@@ -1,11 +1,13 @@
-drop table if exists services;
+drop table if exists entries;
 
-create table services (
-  nodoOrigen text not null,
-  nodoDestino text not null,
-  pwId text not null,
+create table entries (
+  id integer primary key autoincrement,
+  originNode text not null,
+  destinationNode text not null,
+  pwID text not null,
   localInterface text not null,
   remoteInterface text not null,
-  vlan integer not null,
-  vplsId text
+  vlanID integer not null,
+  vplsID text,
+  customerName text not null
 );
